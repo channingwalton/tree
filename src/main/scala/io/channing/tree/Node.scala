@@ -3,7 +3,7 @@ package io.channing.tree
 import java.util.UUID
 import scala.collection.mutable
 
-final case class Node[T](
+final case class Node[+T](
     id: UUID = UUID.randomUUID(),
     data: Option[T] = None,
     children: List[Node[T]] = List.empty[Node[T]],

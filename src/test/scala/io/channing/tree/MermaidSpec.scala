@@ -15,7 +15,7 @@ class MermaidSpec extends AnyWordSpec {
       val flowchart = Mermaid.toFlowchart(node)
 
       assert(flowchart.contains("flowchart TD"))
-      assert(flowchart.contains("550e8400[\"simple node<br/>550e8400-e29b-41d4-a716-446655440000\"]"))
+      assert(flowchart.contains("A[\"simple node <br/> ID: 550e8400-e29b-41d4-a716-446655440000\"]"))
     }
 
     "generate flowchart for node with children" in {
@@ -38,11 +38,11 @@ class MermaidSpec extends AnyWordSpec {
       val flowchart = Mermaid.toFlowchart(parent)
 
       assert(flowchart.contains("flowchart TD"))
-      assert(flowchart.contains("33333333[\"parent<br/>33333333-3333-3333-3333-333333333333\"]"))
-      assert(flowchart.contains("11111111[\"child 1<br/>11111111-1111-1111-1111-111111111111\"]"))
-      assert(flowchart.contains("22222222[\"child 2<br/>22222222-2222-2222-2222-222222222222\"]"))
-      assert(flowchart.contains("33333333 --> 11111111"))
-      assert(flowchart.contains("33333333 --> 22222222"))
+      assert(flowchart.contains("A[\"parent <br/> ID: 33333333-3333-3333-3333-333333333333\"]"))
+      assert(flowchart.contains("C[\"child 1 <br/> ID: 11111111-1111-1111-1111-111111111111\"]"))
+      assert(flowchart.contains("B[\"child 2 <br/> ID: 22222222-2222-2222-2222-222222222222\"]"))
+      assert(flowchart.contains("A --> C"))
+      assert(flowchart.contains("A --> B"))
     }
 
     "generate flowchart for node with references" in {
@@ -66,10 +66,10 @@ class MermaidSpec extends AnyWordSpec {
       val flowchart = Mermaid.toFlowchart(source)
 
       assert(flowchart.contains("flowchart TD"))
-      assert(flowchart.contains("55555555 --> 44444444"))
-      assert(flowchart.contains("55555555 -.->|\"internal\"| 44444444"))
-      assert(flowchart.contains("55555555 -.->|\"external\"| eeeeeeee"))
-      assert(flowchart.contains("eeeeeeee[\"External<br/>eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee\"]"))
+      assert(flowchart.contains("A --> B"))
+      assert(flowchart.contains("A -.->|\"internal\"| B"))
+      assert(flowchart.contains("A -.->|\"external\"| C"))
+      assert(flowchart.contains("C[\"External <br/> ID: eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee\"]"))
     }
   }
 }

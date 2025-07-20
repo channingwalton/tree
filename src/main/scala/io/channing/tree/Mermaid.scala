@@ -9,10 +9,16 @@ object Mermaid {
     val allNodes    = collectAllNodes(rootNode)
     val externalIds = collectExternalNodeIds(allNodes)
 
-    val nodeDefinitions = (allNodes.map(generateNodeDefinition) ++
-      externalIds.map(generateExternalNodeDefinition)).mkString("\n    ")
-    val treeEdges      = generateTreeEdges(allNodes)
-    val referenceEdges = generateReferenceEdges(allNodes)
+    // Create alphabetic mapping for all nodes
+    val allNodeIds   = allNodes.map(_.id).toList ++ externalIds.toList
+    val nodeAlphaMap = allNodeIds.zipWithIndex.map { case (id, index) =>
+      id -> ('A' + index).toChar.toString
+    }.toMap
+
+    val nodeDefinitions = (allNodes.map(node => generateNodeDefinitionWithAlpha(node, nodeAlphaMap)) ++
+      externalIds.map(id => generateExternalNodeDefinitionWithAlpha(id, nodeAlphaMap))).mkString("\n    ")
+    val treeEdges      = generateTreeEdgesWithAlpha(allNodes, nodeAlphaMap)
+    val referenceEdges = generateReferenceEdgesWithAlpha(allNodes, nodeAlphaMap)
 
     s"""flowchart TD
     |    $nodeDefinitions
@@ -41,42 +47,40 @@ object Mermaid {
     allNodes.flatMap(_.references.map(_.nodeId)).filterNot(nodeIds.contains)
   }
 
-  private def generateNodeDefinition[T](node: Node[T]): String = {
-    val nodeId  = sanitizeId(node.id)
-    val dataStr = node.data.map(_.toString).getOrElse("None")
-    val label   = s"$dataStr<br/>${node.id}"
-    s"""$nodeId["$label"]"""
+  private def generateNodeDefinitionWithAlpha[T](node: Node[T], alphaMap: Map[UUID, String]): String = {
+    val nodeAlpha = alphaMap(node.id)
+    val dataStr   = node.data.map(_.toString).getOrElse("None")
+    val label     = s"$dataStr <br/> ID: ${node.id}"
+    s"""$nodeAlpha["$label"]"""
   }
 
-  private def generateExternalNodeDefinition(id: UUID): String = {
-    val nodeId = sanitizeId(id)
-    val label  = s"External<br/>$id"
-    s"""$nodeId["$label"]"""
+  private def generateExternalNodeDefinitionWithAlpha(id: UUID, alphaMap: Map[UUID, String]): String = {
+    val nodeAlpha = alphaMap(id)
+    val label     = s"External <br/> ID: $id"
+    s"""$nodeAlpha["$label"]"""
   }
 
-  private def generateTreeEdges[T](allNodes: Set[Node[T]]): String = {
+  private def generateTreeEdgesWithAlpha[T](allNodes: Set[Node[T]], alphaMap: Map[UUID, String]): String = {
     val edges = for {
       node <- allNodes
       child <- node.children
     } yield {
-      val parentId = sanitizeId(node.id)
-      val childId  = sanitizeId(child.id)
-      s"    $parentId --> $childId"
+      val parentAlpha = alphaMap(node.id)
+      val childAlpha  = alphaMap(child.id)
+      s"    $parentAlpha --> $childAlpha"
     }
     edges.mkString("\n")
   }
 
-  private def generateReferenceEdges[T](allNodes: Set[Node[T]]): String = {
+  private def generateReferenceEdgesWithAlpha[T](allNodes: Set[Node[T]], alphaMap: Map[UUID, String]): String = {
     val edges = for {
       node <- allNodes
       reference <- node.references
     } yield {
-      val sourceId = sanitizeId(node.id)
-      val targetId = sanitizeId(reference.nodeId)
-      s"""    $sourceId -.->|"${reference.name}"| $targetId"""
+      val sourceAlpha = alphaMap(node.id)
+      val targetAlpha = alphaMap(reference.nodeId)
+      s"""    $sourceAlpha -.->|"${reference.name}"| $targetAlpha"""
     }
     edges.mkString("\n")
   }
-
-  private def sanitizeId(uuid: UUID): String = uuid.toString.take(8).replace("-", "u")
 }
