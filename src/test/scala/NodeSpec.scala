@@ -29,12 +29,12 @@ class NodeSpec extends AnyWordSpec {
 
       val copiedChild = updatedParent.children(1)
       assert(copiedChild.id != firstChild.id)
-      assert(copiedChild.data == firstChild.data)
+      assert(copiedChild.data == None)
       assert(copiedChild.children.length == firstChild.children.length)
 
       val copiedGrandchild = copiedChild.children.head
       assert(copiedGrandchild.id != grandchild.id)
-      assert(copiedGrandchild.data == grandchild.data)
+      assert(copiedGrandchild.data == None)
     }
 
     "return same node when no children exist" in {

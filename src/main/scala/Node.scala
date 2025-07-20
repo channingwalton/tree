@@ -36,7 +36,7 @@ final case class Node[T](
 
     Node(
       id = newId,
-      data = node.data,
+      data = None,
       children = copiedChildren,
       references = updatedReferences
     )
