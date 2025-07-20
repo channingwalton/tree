@@ -1,3 +1,5 @@
+package io.channing.graph
+
 import java.util.UUID
 import scala.collection.mutable
 
