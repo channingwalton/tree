@@ -23,6 +23,7 @@ object PersonExample {
     )
 
     // Create address node with children
+    // The references are a little weird but I wanted to see something
     val addressNode = Node(
       id = UUID.randomUUID(),
       data = Some("Home Address"),
