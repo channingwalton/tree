@@ -46,21 +46,41 @@ class NodeSpec extends AnyWordSpec {
       assert(result == parent)
     }
 
-    "correctly resolve internal and external references" in {
+    "correctly resolve internal and external references recursively" in {
       val externalNodeId = UUID.randomUUID()
 
-      val grandchild = Node(
+      val greatGrandchild = Node(
         id = UUID.randomUUID(),
-        data = Some("grandchild")
+        data = Some("great-grandchild")
+      )
+
+      val grandchild1 = Node(
+        id = UUID.randomUUID(),
+        data = Some("grandchild1"),
+        children = List(greatGrandchild),
+        references = Set(
+          Reference("child", greatGrandchild.id), // Internal ref to great-grandchild
+          Reference("external", externalNodeId) // External reference
+        )
+      )
+
+      val grandchild2 = Node(
+        id = UUID.randomUUID(),
+        data = Some("grandchild2"),
+        references = Set(
+          Reference("sibling", grandchild1.id), // Internal ref to sibling
+          Reference("nephew", greatGrandchild.id) // Internal ref to nephew
+        )
       )
 
       val firstChild = Node(
         id = UUID.randomUUID(),
         data = Some("first child"),
-        children = List(grandchild),
+        children = List(grandchild1, grandchild2),
         references = Set(
-          Reference("sibling", grandchild.id), // Internal reference within subtree
-          Reference("external", externalNodeId) // External reference outside subtree
+          Reference("child1", grandchild1.id), // Internal ref to child
+          Reference("child2", grandchild2.id), // Internal ref to child
+          Reference("external", externalNodeId) // External reference
         )
       )
 
@@ -72,19 +92,43 @@ class NodeSpec extends AnyWordSpec {
 
       val updatedParent = parent.addChild()
 
-      val copiedChild      = updatedParent.children(1)
-      val copiedGrandchild = copiedChild.children.head
+      val copiedChild           = updatedParent.children(1)
+      val copiedGrandchild1     = copiedChild.children(0)
+      val copiedGrandchild2     = copiedChild.children(1)
+      val copiedGreatGrandchild = copiedGrandchild1.children.head
 
-      // Check that internal reference was updated to point to copied grandchild
-      val siblingRef = copiedChild.references.find(_.name == "sibling")
-      assert(siblingRef.isDefined)
-      assert(siblingRef.get.nodeId == copiedGrandchild.id)
-      assert(siblingRef.get.nodeId != grandchild.id)
+      val childRef1 = copiedChild.references.find(_.name == "child1")
+      assert(childRef1.isDefined)
+      assert(childRef1.get.nodeId == copiedGrandchild1.id)
+      assert(childRef1.get.nodeId != grandchild1.id)
 
-      // Check that external reference remained unchanged
-      val externalRef = copiedChild.references.find(_.name == "external")
-      assert(externalRef.isDefined)
-      assert(externalRef.get.nodeId == externalNodeId)
+      val childRef2 = copiedChild.references.find(_.name == "child2")
+      assert(childRef2.isDefined)
+      assert(childRef2.get.nodeId == copiedGrandchild2.id)
+      assert(childRef2.get.nodeId != grandchild2.id)
+
+      val childExternalRef = copiedChild.references.find(_.name == "external")
+      assert(childExternalRef.isDefined)
+      assert(childExternalRef.get.nodeId == externalNodeId)
+
+      val gc1ChildRef = copiedGrandchild1.references.find(_.name == "child")
+      assert(gc1ChildRef.isDefined)
+      assert(gc1ChildRef.get.nodeId == copiedGreatGrandchild.id)
+      assert(gc1ChildRef.get.nodeId != greatGrandchild.id)
+
+      val gc1ExternalRef = copiedGrandchild1.references.find(_.name == "external")
+      assert(gc1ExternalRef.isDefined)
+      assert(gc1ExternalRef.get.nodeId == externalNodeId)
+
+      val gc2SiblingRef = copiedGrandchild2.references.find(_.name == "sibling")
+      assert(gc2SiblingRef.isDefined)
+      assert(gc2SiblingRef.get.nodeId == copiedGrandchild1.id)
+      assert(gc2SiblingRef.get.nodeId != grandchild1.id)
+
+      val gc2NephewRef = copiedGrandchild2.references.find(_.name == "nephew")
+      assert(gc2NephewRef.isDefined)
+      assert(gc2NephewRef.get.nodeId == copiedGreatGrandchild.id)
+      assert(gc2NephewRef.get.nodeId != greatGrandchild.id)
     }
   }
 }
