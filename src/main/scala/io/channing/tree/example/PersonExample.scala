@@ -94,16 +94,13 @@ object PersonExample {
     personNode
   }
 
-  def generateDiagram(person: Node[String]): String = Mermaid.toFlowchart(person)
-
   def main(args: Array[String]): Unit = {
     println("=== Simple Person with Address ===")
     val simplePerson = createPersonWithAddress()
-    println(generateDiagram(simplePerson))
+    println(Mermaid.toFlowchart(simplePerson))
 
     println("\n=== Person with Multiple Addresses ===")
     val complexPerson = createPersonWithMultipleAddresses()
-    println(generateDiagram(complexPerson))
+    println(Mermaid.toFlowchart(complexPerson))
   }
 }
-
