@@ -1,4 +1,4 @@
-package io.channing.graph
+package io.channing.tree
 
 import java.util.UUID
 
