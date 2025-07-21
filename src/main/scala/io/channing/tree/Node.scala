@@ -3,14 +3,18 @@ package io.channing.tree
 import java.util.UUID
 import scala.collection.mutable
 
-final case class Node[+T](
+trait NodeEntry {
+  def reset: NodeEntry
+}
+
+final case class Node(
     id: UUID = UUID.randomUUID(),
-    data: Option[T] = None,
-    children: List[Node[T]] = List.empty[Node[T]],
+    data: NodeEntry,
+    children: List[Node] = List.empty[Node],
     references: Set[Reference] = Set.empty[Reference]
 ) {
 
-  def addChild(): Node[T] =
+  def addChild(): Node =
     children.headOption match {
       case None             => this
       case Some(firstChild) =>
@@ -18,12 +22,12 @@ final case class Node[+T](
         this.copy(children = children :+ copiedChild)
     }
 
-  private def copySubtreeWithNewIds(node: Node[T]): Node[T] = {
+  private def copySubtreeWithNewIds(node: Node): Node = {
     val idMapping = mutable.Map[UUID, UUID]()
     copyNodeRecursively(node, idMapping)
   }
 
-  private def copyNodeRecursively(node: Node[T], idMapping: mutable.Map[UUID, UUID]): Node[T] = {
+  private def copyNodeRecursively(node: Node, idMapping: mutable.Map[UUID, UUID]): Node = {
     val newId = UUID.randomUUID()
     idMapping(node.id) = newId
 
@@ -38,7 +42,7 @@ final case class Node[+T](
 
     Node(
       id = newId,
-      data = None,
+      data = node.data.reset,
       children = copiedChildren,
       references = updatedReferences
     )

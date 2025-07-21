@@ -1,7 +1,8 @@
 package io.channing.tree
 
-import java.util.UUID
 import org.scalatest.wordspec.AnyWordSpec
+
+import java.util.UUID
 
 class MermaidSpec extends AnyWordSpec {
 
@@ -9,7 +10,7 @@ class MermaidSpec extends AnyWordSpec {
     "generate flowchart for simple node" in {
       val node = Node(
         id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000"),
-        data = Some("simple node")
+        data = TestEntry(Some("simple node"))
       )
 
       val flowchart = Mermaid.toFlowchart(node)
@@ -21,17 +22,17 @@ class MermaidSpec extends AnyWordSpec {
     "generate flowchart for node with children" in {
       val child1 = Node(
         id = UUID.fromString("11111111-1111-1111-1111-111111111111"),
-        data = Some("child 1")
+        data = TestEntry(Some("child 1"))
       )
 
       val child2 = Node(
         id = UUID.fromString("22222222-2222-2222-2222-222222222222"),
-        data = Some("child 2")
+        data = TestEntry(Some("child 2"))
       )
 
       val parent = Node(
         id = UUID.fromString("33333333-3333-3333-3333-333333333333"),
-        data = Some("parent"),
+        data = TestEntry(Some("parent")),
         children = List(child1, child2)
       )
 
@@ -50,12 +51,12 @@ class MermaidSpec extends AnyWordSpec {
 
       val target = Node(
         id = UUID.fromString("44444444-4444-4444-4444-444444444444"),
-        data = Some("target")
+        data = TestEntry(Some("target"))
       )
 
       val source = Node(
         id = UUID.fromString("55555555-5555-5555-5555-555555555555"),
-        data = Some("source"),
+        data = TestEntry(Some("source")),
         children = List(target),
         references = Set(
           Reference("internal", target.id),

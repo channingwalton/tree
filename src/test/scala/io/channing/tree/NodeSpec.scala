@@ -7,10 +7,10 @@ class NodeSpec extends AnyWordSpec {
 
   "addChild" should {
     "copy the first child with new IDs" in {
-      val grandchildData = Some("grandchild")
+      val grandchildData = TestEntry(Some("grandchild"))
       val grandchild     = Node(id = UUID.randomUUID(), data = grandchildData)
 
-      val firstChildData = Some("first child")
+      val firstChildData = TestEntry(Some("first child"))
       val firstChild     = Node(
         id = UUID.randomUUID(),
         data = firstChildData,
@@ -19,7 +19,7 @@ class NodeSpec extends AnyWordSpec {
 
       val parent = Node(
         id = UUID.randomUUID(),
-        data = Some("parent"),
+        data = TestEntry(Some("parent")),
         children = List(firstChild)
       )
 
@@ -31,16 +31,16 @@ class NodeSpec extends AnyWordSpec {
 
       val copiedChild = updatedParent.children(1)
       assert(copiedChild.id != firstChild.id)
-      assert(copiedChild.data == None)
+      assert(copiedChild.data == TestEntry(None))
       assert(copiedChild.children.length == firstChild.children.length)
 
       val copiedGrandchild = copiedChild.children.head
       assert(copiedGrandchild.id != grandchild.id)
-      assert(copiedGrandchild.data == None)
+      assert(copiedGrandchild.data == TestEntry(None))
     }
 
     "return same node when no children exist" in {
-      val parent = Node(id = UUID.randomUUID(), data = Some("parent"))
+      val parent = Node(id = UUID.randomUUID(), data = TestEntry(Some("parent")))
       val result = parent.addChild()
 
       assert(result == parent)
@@ -51,12 +51,12 @@ class NodeSpec extends AnyWordSpec {
 
       val greatGrandchild = Node(
         id = UUID.randomUUID(),
-        data = Some("great-grandchild")
+        data = TestEntry(Some("great-grandchild"))
       )
 
       val grandchild1 = Node(
         id = UUID.randomUUID(),
-        data = Some("grandchild1"),
+        data = TestEntry(Some("grandchild1")),
         children = List(greatGrandchild),
         references = Set(
           Reference("child", greatGrandchild.id), // Internal ref to great-grandchild
@@ -66,7 +66,7 @@ class NodeSpec extends AnyWordSpec {
 
       val grandchild2 = Node(
         id = UUID.randomUUID(),
-        data = Some("grandchild2"),
+        data = TestEntry(Some("grandchild2")),
         references = Set(
           Reference("sibling", grandchild1.id), // Internal ref to sibling
           Reference("nephew", greatGrandchild.id) // Internal ref to nephew
@@ -75,7 +75,7 @@ class NodeSpec extends AnyWordSpec {
 
       val firstChild = Node(
         id = UUID.randomUUID(),
-        data = Some("first child"),
+        data = TestEntry(Some("first child")),
         children = List(grandchild1, grandchild2),
         references = Set(
           Reference("child1", grandchild1.id), // Internal ref to child
@@ -86,7 +86,7 @@ class NodeSpec extends AnyWordSpec {
 
       val parent = Node(
         id = UUID.randomUUID(),
-        data = Some("parent"),
+        data = TestEntry(Some("parent")),
         children = List(firstChild)
       )
 

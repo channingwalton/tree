@@ -5,7 +5,7 @@ import scala.collection.mutable
 
 object Mermaid {
 
-  def toFlowchart[T](rootNode: Node[T]): String = {
+  def toFlowchart[T](rootNode: Node): String = {
     val allNodes    = collectAllNodes(rootNode)
     val externalIds = collectExternalNodeIds(allNodes)
 
@@ -27,11 +27,11 @@ object Mermaid {
     |    $referenceEdges""".stripMargin
   }
 
-  private def collectAllNodes[T](rootNode: Node[T]): Set[Node[T]] = {
+  private def collectAllNodes[T](rootNode: Node): Set[Node] = {
     val visited = mutable.Set[UUID]()
-    val nodes   = mutable.Set[Node[T]]()
+    val nodes   = mutable.Set[Node]()
 
-    def traverse(node: Node[T]): Unit =
+    def traverse(node: Node): Unit =
       if (!visited.contains(node.id)) {
         visited += node.id
         nodes += node
@@ -42,14 +42,14 @@ object Mermaid {
     nodes.toSet
   }
 
-  private def collectExternalNodeIds[T](allNodes: Set[Node[T]]): Set[UUID] = {
+  private def collectExternalNodeIds[T](allNodes: Set[Node]): Set[UUID] = {
     val nodeIds = allNodes.map(_.id)
-    allNodes.flatMap(_.references.map(_.nodeId)).filterNot(nodeIds.contains)
+    allNodes.flatMap(_.references.map(_.nodeId)).diff(nodeIds)
   }
 
-  private def generateNodeDefinitionWithAlpha[T](node: Node[T], alphaMap: Map[UUID, String]): String = {
+  private def generateNodeDefinitionWithAlpha[T](node: Node, alphaMap: Map[UUID, String]): String = {
     val nodeAlpha = alphaMap(node.id)
-    val dataStr   = node.data.map(_.toString).getOrElse("None")
+    val dataStr   = node.data.toString
     val label     = s"$dataStr <br/> ID: ${node.id}"
     s"""$nodeAlpha["$label"]"""
   }
@@ -60,7 +60,7 @@ object Mermaid {
     s"""$nodeAlpha["$label"]"""
   }
 
-  private def generateTreeEdgesWithAlpha[T](allNodes: Set[Node[T]], alphaMap: Map[UUID, String]): String = {
+  private def generateTreeEdgesWithAlpha[T](allNodes: Set[Node], alphaMap: Map[UUID, String]): String = {
     val edges = for {
       node <- allNodes
       child <- node.children
@@ -72,7 +72,7 @@ object Mermaid {
     edges.mkString("\n")
   }
 
-  private def generateReferenceEdgesWithAlpha[T](allNodes: Set[Node[T]], alphaMap: Map[UUID, String]): String = {
+  private def generateReferenceEdgesWithAlpha[T](allNodes: Set[Node], alphaMap: Map[UUID, String]): String = {
     val edges = for {
       node <- allNodes
       reference <- node.references
