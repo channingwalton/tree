@@ -1,6 +1,6 @@
 package io.channing.tree.example
 
-import io.channing.tree.{ Mermaid, Node, NodeEntry, Reference }
+import io.channing.tree.{ Mermaid, Node, NodeEntry }
 
 import java.util.UUID
 
@@ -43,17 +43,17 @@ object QuestionnaireExample {
     )
 
     // Address section
-    val addressSection = Node(
+    val address = Node(
       id = UUID.randomUUID(),
       data = Label("Address"),
-      children = List(firstLineQuestion, secondLineQuestion, postcodeQuestion, countryQuestion),
-      references = Set(
-        Reference("first_line", firstLineQuestion.id),
-        Reference("second_line", secondLineQuestion.id),
-        Reference("postcode", postcodeQuestion.id),
-        Reference("country", countryQuestion.id)
-      )
+      children = List(firstLineQuestion, secondLineQuestion, postcodeQuestion, countryQuestion)
     )
+
+    val addressesSection = Node(
+      id = UUID.randomUUID(),
+      data = Label("Addresses"),
+      children = List(address)
+    ).addChild()
 
     val age = Node(
       id = UUID.randomUUID(),
@@ -62,17 +62,16 @@ object QuestionnaireExample {
       references = Set.empty
     )
 
-    // Person top level
     Node(
       id = UUID.randomUUID(),
       data = Label("Person"),
-      children = List(age, addressSection)
+      children = List(age, addressesSection)
     )
   }
 
   def main(args: Array[String]): Unit = {
     println("=== Person Address Questionnaire ===")
-    val personQuestionnaire = createPersonAddressQuestionnaire().addChild()
+    val personQuestionnaire = createPersonAddressQuestionnaire()
     println(Mermaid.toFlowchart(personQuestionnaire))
   }
 }
