@@ -21,7 +21,6 @@ object QuestionnaireExample {
   }
 
   def createPersonAddressQuestionnaire(): Node = {
-    // Address component questions
     val firstLineQuestion = Node(
       id = UUID.randomUUID(),
       data = StringQuestion("First line of address")
@@ -42,7 +41,6 @@ object QuestionnaireExample {
       data = StringQuestion("Country")
     )
 
-    // Address section
     val address = Node(
       id = UUID.randomUUID(),
       data = Label("Address"),
