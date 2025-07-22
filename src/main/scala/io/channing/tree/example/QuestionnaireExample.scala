@@ -6,23 +6,22 @@ import java.util.UUID
 
 object QuestionnaireExample {
 
-  sealed trait Question extends NodeEntry {
+  sealed trait Question extends NodeEntry:
     def question: String
-  }
-  final case class Label(question: String) extends Question {
-    override def reset: NodeEntry = this
-  }
-  final case class StringQuestion(question: String, ans: Option[String] = None) extends Question {
-    override def reset: NodeEntry = copy(ans = None)
-  }
-  final case class IntQuestion(question: String, ans: Option[Int] = None) extends Question {
-    override def reset: NodeEntry = copy(ans = None)
-  }
-  final case class BooleanQuestion(question: String, ans: Option[Boolean] = None) extends Question {
-    override def reset: NodeEntry = copy(ans = None)
-  }
 
-  def createPersonAddressQuestionnaire(): Node = {
+  final case class Label(question: String) extends Question:
+    override def reset: NodeEntry = this
+
+  final case class StringQuestion(question: String, ans: Option[String] = None) extends Question:
+    override def reset: NodeEntry = copy(ans = None)
+
+  final case class IntQuestion(question: String, ans: Option[Int] = None) extends Question:
+    override def reset: NodeEntry = copy(ans = None)
+
+  final case class BooleanQuestion(question: String, ans: Option[Boolean] = None) extends Question:
+    override def reset: NodeEntry = copy(ans = None)
+
+  def createPersonAddressQuestionnaire(): Node =
     val firstLineQuestion = Node(
       id = UUID.randomUUID(),
       data = StringQuestion("First line of address")
@@ -59,7 +58,7 @@ object QuestionnaireExample {
       id = UUID.randomUUID(),
       data = IntQuestion("How old are you?"),
       children = List(),
-      references = Set.empty
+      references = Set()
     )
 
     Node(
@@ -67,11 +66,9 @@ object QuestionnaireExample {
       data = Label("Person"),
       children = List(age, addressesSection)
     )
-  }
-
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit =
     println("=== Person Address Questionnaire ===")
     val personQuestionnaire = createPersonAddressQuestionnaire()
     println(Mermaid.toFlowchart(personQuestionnaire))
-  }
+
 }
