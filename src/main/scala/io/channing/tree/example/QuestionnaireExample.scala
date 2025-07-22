@@ -37,16 +37,25 @@ object QuestionnaireExample:
   final case class Label(question: String, validate: Validation = _ => ValidationResult.Success) extends Question:
     override def reset: NodeEntry = this
 
-  final case class StringQuestion(question: String, validate: Validation = _ => ValidationResult.Success, ans: Option[String] = None)
-      extends Question:
+  final case class StringQuestion(
+      question: String,
+      validate: Validation = _ => ValidationResult.Success,
+      ans: Option[String] = None
+  ) extends Question:
     override def reset: NodeEntry = copy(ans = None)
 
-  final case class IntQuestion(question: String, validate: Validation = _ => ValidationResult.Success, ans: Option[Int] = None)
-      extends Question:
+  final case class IntQuestion(
+      question: String,
+      validate: Validation = _ => ValidationResult.Success,
+      ans: Option[Int] = None
+  ) extends Question:
     override def reset: NodeEntry = copy(ans = None)
 
-  final case class BooleanQuestion(question: String, validate: Validation = _ => ValidationResult.Success, ans: Option[Boolean] = None)
-      extends Question:
+  final case class BooleanQuestion(
+      question: String,
+      validate: Validation = _ => ValidationResult.Success,
+      ans: Option[Boolean] = None
+  ) extends Question:
     override def reset: NodeEntry = copy(ans = None)
 
   def isValid(node: Node): Boolean = {

@@ -16,7 +16,9 @@ class MermaidSpec extends AnyWordSpec {
       val flowchart = Mermaid.toFlowchart(node)
 
       assert(flowchart.contains("flowchart TD"))
-      assert(flowchart.contains("A[\"TestEntry(value = Some(simple node)) <br/> ID: 550e8400-e29b-41d4-a716-446655440000\"]"))
+      assert(
+        flowchart.contains("A[\"TestEntry(value = Some(simple node)) <br/> ID: 550e8400-e29b-41d4-a716-446655440000\"]")
+      )
     }
 
     "generate flowchart for node with children" in {
@@ -39,9 +41,15 @@ class MermaidSpec extends AnyWordSpec {
       val flowchart = Mermaid.toFlowchart(parent)
 
       assert(flowchart.contains("flowchart TD"))
-      assert(flowchart.contains("C[\"TestEntry(value = Some(parent)) <br/> ID: 33333333-3333-3333-3333-333333333333\"]"))
-      assert(flowchart.contains("A[\"TestEntry(value = Some(child 1)) <br/> ID: 11111111-1111-1111-1111-111111111111\"]"))
-      assert(flowchart.contains("B[\"TestEntry(value = Some(child 2)) <br/> ID: 22222222-2222-2222-2222-222222222222\"]"))
+      assert(
+        flowchart.contains("C[\"TestEntry(value = Some(parent)) <br/> ID: 33333333-3333-3333-3333-333333333333\"]")
+      )
+      assert(
+        flowchart.contains("A[\"TestEntry(value = Some(child 1)) <br/> ID: 11111111-1111-1111-1111-111111111111\"]")
+      )
+      assert(
+        flowchart.contains("B[\"TestEntry(value = Some(child 2)) <br/> ID: 22222222-2222-2222-2222-222222222222\"]")
+      )
       assert(flowchart.contains("C --> A"))
       assert(flowchart.contains("C --> B"))
     }
