@@ -49,3 +49,10 @@ final case class Node(
       children = copiedChildren,
       references = updatedReferences
     )
+
+  def referencedNode(name: String, root: Node): Option[Node] =
+    references.find(_.name == name).flatMap(reference => root.findNodeById(reference.nodeId))
+
+  def findNodeById(otherId: UUID): Option[Node] =
+    if otherId == id then Some(this)
+    else children.view.map(_.findNodeById(otherId)).find(_.isDefined).flatten

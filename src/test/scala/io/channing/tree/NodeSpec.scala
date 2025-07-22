@@ -249,5 +249,246 @@ class NodeSpec extends AnyWordSpec {
       assert(copiedChild.id != child.id)
       assert(copiedChild.data == TestEntry(None))
     }
+
+    "referencedNode" should {
+      "return Some(node) when reference exists and target node is found in root" in {
+        val targetNode = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("target"))
+        )
+
+        val childNode = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("child"))
+        )
+
+        val root = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("root")),
+          children = List(targetNode, childNode)
+        )
+
+        val nodeWithReference = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("node with ref")),
+          references = Set(Reference("my_target", targetNode.id))
+        )
+
+        val result = nodeWithReference.referencedNode("my_target", root)
+
+        assert(result.isDefined)
+        assert(result.get == targetNode)
+      }
+
+      "return None when reference name does not exist" in {
+        val targetNode = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("target"))
+        )
+
+        val root = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("root")),
+          children = List(targetNode)
+        )
+
+        val nodeWithReference = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("node with ref")),
+          references = Set(Reference("existing_ref", targetNode.id))
+        )
+
+        val result = nodeWithReference.referencedNode("nonexistent_ref", root)
+
+        assert(result.isEmpty)
+      }
+
+      "return None when reference exists but target node is not found in root" in {
+        val targetNodeId  = UUID.randomUUID()
+        val differentNode = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("different"))
+        )
+
+        val root = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("root")),
+          children = List(differentNode)
+        )
+
+        val nodeWithReference = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("node with ref")),
+          references = Set(Reference("missing_target", targetNodeId))
+        )
+
+        val result = nodeWithReference.referencedNode("missing_target", root)
+
+        assert(result.isEmpty)
+      }
+
+      "find target node in deeply nested structure" in {
+        val deeplyNestedTarget = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("deeply nested target"))
+        )
+
+        val level3 = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("level 3")),
+          children = List(deeplyNestedTarget)
+        )
+
+        val level2 = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("level 2")),
+          children = List(level3)
+        )
+
+        val level1 = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("level 1")),
+          children = List(level2)
+        )
+
+        val root = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("root")),
+          children = List(level1)
+        )
+
+        val nodeWithReference = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("node with ref")),
+          references = Set(Reference("deep_ref", deeplyNestedTarget.id))
+        )
+
+        val result = nodeWithReference.referencedNode("deep_ref", root)
+
+        assert(result.isDefined)
+        assert(result.get == deeplyNestedTarget)
+      }
+
+      "find target node when it is the root node itself" in {
+        val root = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("root"))
+        )
+
+        val nodeWithReference = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("node with ref")),
+          references = Set(Reference("root_ref", root.id))
+        )
+
+        val result = nodeWithReference.referencedNode("root_ref", root)
+
+        assert(result.isDefined)
+        assert(result.get == root)
+      }
+
+      "handle multiple references and return correct one by name" in {
+        val target1 = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("target 1"))
+        )
+
+        val target2 = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("target 2"))
+        )
+
+        val target3 = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("target 3"))
+        )
+
+        val root = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("root")),
+          children = List(target1, target2, target3)
+        )
+
+        val nodeWithMultipleReferences = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("node with multiple refs")),
+          references = Set(
+            Reference("first", target1.id),
+            Reference("second", target2.id),
+            Reference("third", target3.id)
+          )
+        )
+
+        val result1 = nodeWithMultipleReferences.referencedNode("first", root)
+        val result2 = nodeWithMultipleReferences.referencedNode("second", root)
+        val result3 = nodeWithMultipleReferences.referencedNode("third", root)
+
+        assert(result1.isDefined && result1.get == target1)
+        assert(result2.isDefined && result2.get == target2)
+        assert(result3.isDefined && result3.get == target3)
+      }
+
+      "return None when node has no references" in {
+        val targetNode = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("target"))
+        )
+
+        val root = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("root")),
+          children = List(targetNode)
+        )
+
+        val nodeWithoutReferences = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("node without refs"))
+        )
+
+        val result = nodeWithoutReferences.referencedNode("any_name", root)
+
+        assert(result.isEmpty)
+      }
+
+      "find target node among siblings" in {
+        val sibling1 = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("sibling 1"))
+        )
+
+        val targetSibling = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("target sibling"))
+        )
+
+        val sibling3 = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("sibling 3"))
+        )
+
+        val parent = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("parent")),
+          children = List(sibling1, targetSibling, sibling3)
+        )
+
+        val root = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("root")),
+          children = List(parent)
+        )
+
+        val nodeWithReference = Node(
+          id = UUID.randomUUID(),
+          data = TestEntry(Some("node with ref")),
+          references = Set(Reference("sibling_ref", targetSibling.id))
+        )
+
+        val result = nodeWithReference.referencedNode("sibling_ref", root)
+
+        assert(result.isDefined)
+        assert(result.get == targetSibling)
+      }
+    }
   }
 }
