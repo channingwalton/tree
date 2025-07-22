@@ -22,6 +22,18 @@ final case class Node(
         this.copy(children = children :+ copiedChild)
     }
 
+  def addChildAt(id: UUID): Node =
+    if (this.id == id) {
+      this.addChild()
+    } else {
+      val updatedChildren = children.map(child => child.addChildAt(id))
+      if (updatedChildren != children) {
+        this.copy(children = updatedChildren)
+      } else {
+        this
+      }
+    }
+
   private def copySubtreeWithNewIds(node: Node): Node = {
     val idMapping = mutable.Map[UUID, UUID]()
     copyNodeRecursively(node, idMapping)

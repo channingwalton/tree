@@ -6,7 +6,9 @@ import java.util.UUID
 
 object QuestionnaireExample {
 
-  sealed trait Question extends NodeEntry { def question: String }
+  sealed trait Question extends NodeEntry {
+    def question: String
+  }
   final case class Label(question: String) extends Question {
     override def reset: NodeEntry = this
   }

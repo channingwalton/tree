@@ -7,7 +7,7 @@ val inCI = sys.env.get("CI").contains("true")
 lazy val root = project
   .in(file("."))
   .settings(
-    name := "omnear-graph",
+    name := "tree",
     version := "0.1.0-SNAPSHOT",
     scalaVersion := scala3Version,
     libraryDependencies ++= Seq(

@@ -131,4 +131,123 @@ class NodeSpec extends AnyWordSpec {
       assert(gc2NephewRef.get.nodeId != greatGrandchild.id)
     }
   }
+
+  "addChildAt" should {
+    "add child to node with matching ID" in {
+      val grandchild = Node(
+        id = UUID.randomUUID(),
+        data = TestEntry(Some("grandchild"))
+      )
+
+      val child = Node(
+        id = UUID.randomUUID(),
+        data = TestEntry(Some("child")),
+        children = List(grandchild)
+      )
+
+      val parent = Node(
+        id = UUID.randomUUID(),
+        data = TestEntry(Some("parent")),
+        children = List(child)
+      )
+
+      val updatedParent = parent.addChildAt(child.id)
+
+      // Check that the child node now has 2 children (original + copied)
+      val updatedChild = updatedParent.children.head
+      assert(updatedChild.children.length == 2)
+      assert(updatedChild.children.head == grandchild) // Original grandchild
+
+      // The copied grandchild should have a new ID and reset data
+      val copiedGrandchild = updatedChild.children(1)
+      assert(copiedGrandchild.id != grandchild.id)
+      assert(copiedGrandchild.data == TestEntry(None))
+    }
+
+    "add child to deeply nested node" in {
+      val leafChild = Node(
+        id = UUID.randomUUID(),
+        data = TestEntry(Some("leaf child"))
+      )
+
+      val deepChild = Node(
+        id = UUID.randomUUID(),
+        data = TestEntry(Some("deep child")),
+        children = List(leafChild)
+      )
+
+      val middleChild = Node(
+        id = UUID.randomUUID(),
+        data = TestEntry(Some("middle child")),
+        children = List(deepChild)
+      )
+
+      val topChild = Node(
+        id = UUID.randomUUID(),
+        data = TestEntry(Some("top child")),
+        children = List(middleChild)
+      )
+
+      val root = Node(
+        id = UUID.randomUUID(),
+        data = TestEntry(Some("root")),
+        children = List(topChild)
+      )
+
+      val updatedRoot = root.addChildAt(deepChild.id)
+
+      // Navigate to the deep child and verify it was updated
+      val updatedDeepChild = updatedRoot.children.head.children.head.children.head
+      assert(updatedDeepChild.children.length == 2) // Should have added a child (original + copy)
+      assert(updatedDeepChild.children.head == leafChild) // Original child unchanged
+
+      // The copied child should have a new ID and reset data
+      val copiedLeafChild = updatedDeepChild.children(1)
+      assert(copiedLeafChild.id != leafChild.id) // New ID
+      assert(copiedLeafChild.data == TestEntry(None)) // Reset data
+    }
+
+    "return unchanged node when ID not found" in {
+      val child = Node(
+        id = UUID.randomUUID(),
+        data = TestEntry(Some("child"))
+      )
+
+      val parent = Node(
+        id = UUID.randomUUID(),
+        data = TestEntry(Some("parent")),
+        children = List(child)
+      )
+
+      val nonExistentId = UUID.randomUUID()
+      val result        = parent.addChildAt(nonExistentId)
+
+      // Should return the same tree unchanged
+      assert(result == parent)
+    }
+
+    "add child to root node itself" in {
+      val child = Node(
+        id = UUID.randomUUID(),
+        data = TestEntry(Some("child"))
+      )
+
+      val root = Node(
+        id = UUID.randomUUID(),
+        data = TestEntry(Some("root")),
+        children = List(child)
+      )
+
+      val updatedRoot = root.addChildAt(root.id)
+
+      // Root should now have 2 children (original + copied)
+      assert(updatedRoot.children.length == 2)
+      assert(updatedRoot.children.head == child) // Original child
+
+      // The copied child should have a new ID and reset data
+      val copiedChild = updatedRoot.children(1)
+      assert(copiedChild.id != child.id)
+      assert(copiedChild.data == TestEntry(None))
+    }
+  }
 }
