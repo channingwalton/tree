@@ -2,7 +2,7 @@
 
 ## 1. Executive Summary
 
-The tree is a specialized tree-based data structure that supports unique node identification through UUIDs and enables node duplication with intelligent reference management. This document outlines the complete requirements for implementing the tree data structure.
+The tree is a specialized tree-based data structure that supports references to any node, and node duplication with intelligent reference management.
 
 ## 2. Overview
 
@@ -12,8 +12,8 @@ The library provides a tree structure where:
 - Nodes can have multiple children
 - Each node has a unique UUID identifier
 - Nodes can have named references to other nodes in the graph
-- When a node is duplicated, all references to it are updated to point to the new node
-- When a node is duplicated, the NodeEntry is reset
+- When a node is duplicated, all references internal to the subtree are updated to point to the correspongin nodes in the duplicate node. References external to the copied node remain in place.
+- When a node is duplicated, the Node data is reset
 
 ### 2.2 Key Characteristics
 - **Tree Structure**: Fundamentally a tree with parent-child relationships
