@@ -3,30 +3,26 @@ package io.channing.tree.example
 import io.channing.tree.{ Mermaid, Node, NodeEntry }
 
 import java.util.UUID
+import io.channing.tree.example.QuestionnaireExample.ValidationResult.Success
+import io.channing.tree.example.QuestionnaireExample.ValidationResult.Failure
 
 object QuestionnaireExample:
 
   // A predicate context provided to predicates to validate answers
   final case class PredicateContext(subject: Question, root: Node)
 
-  sealed trait ValidationResult:
-    import ValidationResult.*
-    def &&(other: ValidationResult): ValidationResult =
-      (this, other) match {
-        case (Success, Success) => Success
-        case _                  => this
-      }
-
+  sealed trait ValidationResult
   object ValidationResult:
     case object Success extends ValidationResult
-    case class Failure(message: String) extends ValidationResult
+    case class Failure(question: Question, message: String) extends ValidationResult
 
   type Validation = PredicateContext => ValidationResult
 
   val isPositive: Validation = {
-    case PredicateContext(QuestionnaireExample.IntQuestion(_, _, Some(ans)), _) =>
-      if ans > 0 then ValidationResult.Success else ValidationResult.Failure("Answer must be positive")
-    case _ => ValidationResult.Success
+    case PredicateContext(q @ QuestionnaireExample.IntQuestion(_, _, Some(ans)), _) =>
+      if ans > 0 then ValidationResult.Success
+      else ValidationResult.Failure(q, "Answer must be positive")
+    case PredicateContext(q, _) => ValidationResult.Success
   }
 
   sealed trait Question extends NodeEntry:
@@ -62,9 +58,11 @@ object QuestionnaireExample:
     override def reset: NodeEntry = copy(ans = None)
     override def asString: String = s"$question${ans.map(a => s" ($a)").getOrElse("")}"
 
-  def validate(node: Node): List[ValidationResult] = {
+  def validate(node: Node): List[ValidationResult.Failure] = {
     val question = node.data.asInstanceOf[Question] // yuck
-    question.validate(PredicateContext(question, node)) :: node.children.flatMap(validate)
+    question.validate(PredicateContext(question, node)) match
+      case Success                     => node.children.flatMap(validate)
+      case f: ValidationResult.Failure => f :: node.children.flatMap(validate)
   }
 
   def createPersonAddressQuestionnaire(): Node =
@@ -109,7 +107,7 @@ object QuestionnaireExample:
 
     val age = Node(
       id = UUID.randomUUID(),
-      data = IntQuestion("How old are you?", ans = Some(25)),
+      data = IntQuestion("How old are you?", validate = isPositive, ans = Some(-25)),
       children = List(),
       references = Set()
     )
