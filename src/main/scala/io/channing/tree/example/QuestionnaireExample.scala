@@ -35,6 +35,7 @@ object QuestionnaireExample:
     def isValid(root: Node): ValidationResult = validate(PredicateContext(this, root))
 
   final case class Label(question: String, validate: Validation = _ => ValidationResult.Success) extends Question:
+    override def asString: String = question
     override def reset: NodeEntry = this
 
   final case class StringQuestion(
@@ -42,6 +43,7 @@ object QuestionnaireExample:
       validate: Validation = _ => ValidationResult.Success,
       ans: Option[String] = None
   ) extends Question:
+    override def asString: String = s"$question${ans.map(a => s" ($a)").getOrElse("")}"
     override def reset: NodeEntry = copy(ans = None)
 
   final case class IntQuestion(
@@ -50,6 +52,7 @@ object QuestionnaireExample:
       ans: Option[Int] = None
   ) extends Question:
     override def reset: NodeEntry = copy(ans = None)
+    override def asString: String = s"$question${ans.map(a => s" ($a)").getOrElse("")}"
 
   final case class BooleanQuestion(
       question: String,
@@ -57,10 +60,11 @@ object QuestionnaireExample:
       ans: Option[Boolean] = None
   ) extends Question:
     override def reset: NodeEntry = copy(ans = None)
+    override def asString: String = s"$question${ans.map(a => s" ($a)").getOrElse("")}"
 
-  def isValid(node: Node): Boolean = {
+  def validate(node: Node): List[ValidationResult] = {
     val question = node.data.asInstanceOf[Question] // yuck
-    question.validate(PredicateContext(question, node)) == ValidationResult.Success && node.children.forall(isValid)
+    question.validate(PredicateContext(question, node)) :: node.children.flatMap(validate)
   }
 
   def createPersonAddressQuestionnaire(): Node =
@@ -119,6 +123,6 @@ object QuestionnaireExample:
   def main(args: Array[String]): Unit =
     println("=== Person Address Questionnaire ===")
     val personQuestionnaire = createPersonAddressQuestionnaire()
-    println(s"Person Questionnaire is valid: ${isValid(personQuestionnaire)}")
+    println(s"Person Questionnaire is valid: ${validate(personQuestionnaire)}")
     println(Mermaid.toFlowchart(personQuestionnaire))
 end QuestionnaireExample

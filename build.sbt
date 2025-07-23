@@ -11,6 +11,7 @@ lazy val root = project
     version := "0.1.0-SNAPSHOT",
     scalaVersion := scala3Version,
     libraryDependencies ++= Seq(
+      "org.typelevel"     %% "cats-core"       % "2.9.0",
       "org.scalatest"     %% "scalatest"       % "3.2.19"   % Test,
       "org.scalatestplus" %% "scalacheck-1-18" % "3.2.19.0" % Test,
       compilerPlugin(

@@ -5,6 +5,7 @@ import scala.collection.mutable
 
 trait NodeEntry:
   def reset: NodeEntry
+  def asString: String
 
 final case class Node(
     id: UUID = UUID.randomUUID(),

@@ -45,7 +45,7 @@ object Mermaid:
 
   private def generateNodeDefinitionWithAlpha(node: Node, alphaMap: Map[UUID, String]): String =
     val nodeAlpha = alphaMap(node.id)
-    val dataStr   = node.data.toString
+    val dataStr   = node.data.asString
     val label     = s"$dataStr <br/> ID: ${node.id}"
     s"""$nodeAlpha["$label"]"""
 
