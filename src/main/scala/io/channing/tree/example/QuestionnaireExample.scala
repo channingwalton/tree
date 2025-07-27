@@ -136,7 +136,7 @@ object QuestionnaireExample:
                      |</html>""".stripMargin
     import java.nio.file.{Files, Paths}
     import scala.sys.process.*
-    val path = Paths.get("questionnaire.html")
+    val path = Paths.get("target/questionnaire.html")
     val _ = Files.write(path, html.getBytes("UTF-8"))
     val _ = s"open ${path.toString}".!
 
