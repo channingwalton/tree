@@ -119,8 +119,26 @@ object QuestionnaireExample:
     )
 
   def main(args: Array[String]): Unit =
-    println("=== Person Address Questionnaire ===")
     val personQuestionnaire = createPersonAddressQuestionnaire()
-    println(s"Person Questionnaire is valid: ${validate(personQuestionnaire)}")
-    println(Mermaid.toFlowchart(personQuestionnaire))
+    val html = s"""<!doctype html>
+                     |<html lang="en">
+                     |  <body>
+                     |   <h1>Person Address Questionnaire</h1>
+                     |    Person Questionnaire validation:
+                     |    ${validate(personQuestionnaire).mkString("<li>", "\n", "</li>")}
+                     |    <pre class="mermaid">
+                     |    ${Mermaid.toFlowchart(personQuestionnaire)}
+                     |    </pre>
+                     |    <script type="module">
+                     |      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+                     |    </script>
+                     |  </body>
+                     |</html>""".stripMargin
+    import java.nio.file.{Files, Paths}
+    import scala.sys.process.*
+    val path = Paths.get("questionnaire.html")
+    val _ = Files.write(path, html.getBytes("UTF-8"))
+    val _ = s"open ${path.toString}".!
+
+
 end QuestionnaireExample
